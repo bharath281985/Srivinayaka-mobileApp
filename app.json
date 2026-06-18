@@ -1,0 +1,87 @@
+{
+  "expo": {
+    "name": "Sri Vinayaka",
+    "slug": "sri-vinayaka-mobile",
+    "version": "1.0.8",
+    "icon": "./assets/logo.png",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a1410"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.srivinayakacollections.ios",
+      "buildNumber": "8",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "LSApplicationQueriesSchemes": [
+          "tez",
+          "phonepe",
+          "paytm",
+          "gpay",
+          "upi",
+          "bhim",
+          "kiwi",
+          "paytmmp",
+          "credpay"
+        ]
+      }
+    },
+    "scheme": "saree-studio",
+    "android": {
+      "package": "com.srivinayakacollections.android",
+      "versionCode": 11011,
+      "googleServicesFile": "./google-services.json",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logo.png",
+        "backgroundColor": "#1a1410"
+      },
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.SYSTEM_ALERT_WINDOW"
+      ]
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "extra": {
+      "apiBaseUrl": "https://backendapis.srivinayakacollections.com",
+      "imageBaseUrl": "https://backendapis.srivinayakacollections.com"
+    },
+    "owner": "goexperts",
+    "plugins": [
+      "expo-image",
+      "expo-splash-screen",
+      "expo-status-bar",
+      [
+        "expo-image-picker",
+        {
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": false,
+            "enableShrinkResourcesInReleaseBuilds": false
+          }
+        }
+      ],
+      [
+        "@sentry/react-native",
+        {
+          "organization": "sri-vinayaka",
+          "project": "sri-vinayaka-mobile"
+        }
+      ]
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+node_modules/
+.expo/
+android/
+ios/
+credentials/
+credentials.json
+builds/
+.env
+google-services.json
+GoogleService-Info.plist
+*.zip
+*.log
