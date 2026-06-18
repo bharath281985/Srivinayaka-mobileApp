@@ -53,7 +53,10 @@
     },
     "extra": {
       "apiBaseUrl": "https://backendapis.srivinayakacollections.com",
-      "imageBaseUrl": "https://backendapis.srivinayakacollections.com"
+      "imageBaseUrl": "https://backendapis.srivinayakacollections.com",
+      "eas": {
+        "projectId": "7800233b-37d8-40d4-9c25-bfa13b85b01c"
+      }
     },
     "owner": "goexperts",
     "plugins": [
