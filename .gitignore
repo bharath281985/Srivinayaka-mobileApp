@@ -10,3 +10,4 @@ google-services.json
 GoogleService-Info.plist
 *.zip
 *.log
+.tmp-payment-export/

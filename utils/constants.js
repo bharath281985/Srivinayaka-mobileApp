@@ -17,6 +17,7 @@ export const ROUTES = {
 };
 
 export const ORDER_STATUSES = ['Order Confirmed', 'Order Packed', 'Shipped', 'Out for Delivery', 'Delivered'];
+export const PICKUP_ORDER_STATUSES = ['Order Confirmed', 'Order Packed', 'Ready to Pickup', 'Delivered'];
 export const CANCELLED_STATUSES = ['Canceled', 'Returned'];
 
 export const normalizeOrderStatus = (status) => {

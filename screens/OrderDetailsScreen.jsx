@@ -14,12 +14,15 @@ import { inr } from '../utils/currency';
 import { colors, spacing, radius, typography } from '../app/theme';
 import { ErrorState } from '../components/States';
 import { SkeletonBox } from '../components/SkeletonCard';
-import { CANCELLED_STATUSES, ORDER_STATUSES, normalizeOrderStatus } from '../utils/constants';
+import { CANCELLED_STATUSES, ORDER_STATUSES, PICKUP_ORDER_STATUSES, normalizeOrderStatus } from '../utils/constants';
 
-const STATUS_STEPS = ORDER_STATUSES;
+const getStatusSteps = (order) => {
+  const m = order?.shippingMethod || '';
+  const isPickup = m === 'Store Pickup' || m === 'Delivery By Rapido' || /rapido/i.test(m);
+  return isPickup ? PICKUP_ORDER_STATUSES : ORDER_STATUSES;
+};
 
-const StatusStep = ({ step, status }) => {
-  const steps = STATUS_STEPS;
+const StatusStep = ({ step, status, steps }) => {
   const curIdx = steps.indexOf(normalizeOrderStatus(status));
   const stepIdx = steps.indexOf(step);
   const done = stepIdx <= curIdx;
@@ -99,6 +102,7 @@ const OrderDetailsScreen = ({ route, navigation }) => {
     'Order Packed': '#3b82f6',
     Shipped: '#06b6d4',
     'Out for Delivery': '#6366f1',
+    'Ready to Pickup': '#6366f1',
     Delivered: colors.success,
     Canceled: colors.danger,
     Returned: colors.muted,
@@ -141,17 +145,20 @@ const OrderDetailsScreen = ({ route, navigation }) => {
           {/* Status Stepper (only for non-cancelled orders) */}
           {!CANCELLED_STATUSES.includes(order.orderStatus) && (
             <View style={styles.stepper}>
-              {STATUS_STEPS.map((step, i) => (
-                <React.Fragment key={step}>
-                  <StatusStep step={step} status={displayStatus} />
-                  {i < STATUS_STEPS.length - 1 && (
-                    <View style={[
-                      styles.stepLine,
-                      STATUS_STEPS.indexOf(displayStatus) > i && { backgroundColor: colors.success }
-                    ]} />
-                  )}
-                </React.Fragment>
-              ))}
+              {getStatusSteps(order).map((step, i) => {
+                const steps = getStatusSteps(order);
+                return (
+                  <React.Fragment key={step}>
+                    <StatusStep step={step} status={displayStatus} steps={steps} />
+                    {i < steps.length - 1 && (
+                      <View style={[
+                        styles.stepLine,
+                        steps.indexOf(displayStatus) > i && { backgroundColor: colors.success }
+                      ]} />
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </View>
           )}
         </View>

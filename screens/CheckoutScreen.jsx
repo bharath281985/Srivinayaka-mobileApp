@@ -20,13 +20,16 @@ import { colors, spacing, radius, typography } from '../app/theme';
 
 const STORE_PICKUP_DETAILS = {
   name: 'Sri Vinayaka Collections',
-  address: '#5-4-161, M.G. Road, Near T19 Towers',
-  city: 'Ranigunj, Secunderabad',
+  address: 'H.No 6-4-469/1, Krishna Nagar Colony, Beside Axis Bank Lane, Musheerabad',
+  city: 'Hyderabad',
   state: 'Telangana',
-  postalCode: '500003',
+  postalCode: '500080',
   country: 'India',
   phone: '9392239145',
 };
+
+const RAPIDO_DEFAULT_CITY = 'Hyderabad';
+const RAPIDO_SERVICE_CITIES = ['Hyderabad', 'Secunderabad'];
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const CONFETTI_COLORS = ['#16a34a', '#f59e0b', '#ef4444', '#2563eb', '#db2777', '#7c3aed'];
@@ -69,6 +72,7 @@ const CheckoutScreen = ({ navigation }) => {
   const celebrationTimerRef = useRef(null);
   const paymentMethod = 'Online';
   const isHomeDelivery = fulfillmentMethod === 'delivery';
+  const isRapidoDelivery = fulfillmentMethod === 'pickup';
 
   const [shippingAddress, setShippingAddress] = useState({
     address: addresses.find((a) => a.isDefault)?.address || addresses[0]?.address || '',
@@ -92,15 +96,15 @@ const CheckoutScreen = ({ navigation }) => {
       const def = addresses.find((a) => a.isDefault) || addresses[0];
       setShippingAddress({
         address: def.address,
-        city: def.city,
-        state: def.state || '',
+        city: isRapidoDelivery ? getRapidoCity(def.city) : def.city,
+        state: isRapidoDelivery ? 'Telangana' : def.state || '',
         postalCode: def.postalCode,
         country: def.country || 'India',
         phone: def.phone || '',
         addressType: 'Home',
       });
     }
-  }, [addresses]);
+  }, [addresses, isRapidoDelivery, shippingAddress.address]);
 
   useEffect(() => {
     cachedGet('/api/settings/tax_config', 60000)
@@ -201,8 +205,22 @@ const CheckoutScreen = ({ navigation }) => {
     }, 2600);
   };
 
-  const selectStorePickup = () => {
+  const isRapidoServiceCity = (city = '') => (
+    RAPIDO_SERVICE_CITIES.some((serviceCity) => serviceCity.toLowerCase() === city.trim().toLowerCase())
+  );
+
+  const getRapidoCity = (city = '') => (
+    isRapidoServiceCity(city) ? city : RAPIDO_DEFAULT_CITY
+  );
+
+  const selectRapidoDelivery = () => {
     setFulfillmentMethod('pickup');
+    setShippingAddress((prev) => ({
+      ...prev,
+      city: getRapidoCity(prev.city),
+      state: prev.state || 'Telangana',
+      country: prev.country || 'India',
+    }));
     runPickupCelebration();
   };
 
@@ -273,9 +291,12 @@ const CheckoutScreen = ({ navigation }) => {
   };
 
   const validate = () => {
-    if (!isHomeDelivery) return true;
     if (!shippingAddress.address.trim()) { showToast('Please enter your address.', 'error'); return false; }
     if (!shippingAddress.city.trim()) { showToast('Please enter your city.', 'error'); return false; }
+    if (isRapidoDelivery && !isRapidoServiceCity(shippingAddress.city)) {
+      showToast('Rapido delivery is available only in Hyderabad and Secunderabad.', 'error');
+      return false;
+    }
     if (!shippingAddress.postalCode.trim()) { showToast('Please enter your postal code.', 'error'); return false; }
     if (!shippingAddress.phone.trim()) { showToast('Please enter your phone number.', 'error'); return false; }
     return true;
@@ -291,15 +312,15 @@ const CheckoutScreen = ({ navigation }) => {
 
     setPlacing(true);
     try {
-      const orderShippingAddress = isHomeDelivery ? { ...shippingAddress } : {
-        name: user?.name || 'Store Pickup Customer',
-        address: STORE_PICKUP_DETAILS.address,
-        city: STORE_PICKUP_DETAILS.city,
-        state: STORE_PICKUP_DETAILS.state,
-        postalCode: STORE_PICKUP_DETAILS.postalCode,
-        country: STORE_PICKUP_DETAILS.country,
-        phone: user?.phone || shippingAddress.phone || '',
-        addressType: 'Store Pickup',
+      const orderShippingAddress = {
+        name: user?.name || shippingAddress.name || 'Customer',
+        address: shippingAddress.address,
+        city: shippingAddress.city,
+        state: shippingAddress.state || '',
+        postalCode: shippingAddress.postalCode,
+        country: shippingAddress.country || 'India',
+        phone: shippingAddress.phone || user?.phone || '',
+        addressType: shippingAddress.addressType || 'Home',
       };
 
       const payload = {
@@ -316,7 +337,7 @@ const CheckoutScreen = ({ navigation }) => {
         itemsPrice,
         taxPrice: taxAmount,
         shippingPrice: deliveryCharge,
-        shippingMethod: isHomeDelivery ? selectedShippingMethod?.name : 'Store Pickup',
+        shippingMethod: isHomeDelivery ? selectedShippingMethod?.name : 'Delivery By Rapido',
         totalPrice,
         ...(couponData && { couponCode: couponData.code, discountAmount: discount }),
       };
@@ -367,28 +388,27 @@ const CheckoutScreen = ({ navigation }) => {
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.fulfillmentCard, !isHomeDelivery && styles.fulfillmentCardActive]}
-              onPress={selectStorePickup}
+              onPress={selectRapidoDelivery}
             >
-              <Text style={[styles.fulfillmentTitle, !isHomeDelivery && styles.fulfillmentTitleActive]}>Store Pickup</Text>
-              <Text style={styles.fulfillmentText}>Collect from the store after confirmation.</Text>
+              <Text style={[styles.fulfillmentTitle, !isHomeDelivery && styles.fulfillmentTitleActive]}>Delivery By Rapido</Text>
+              <Text style={styles.fulfillmentText}>Rapido will collect your order from the store and deliver it to your specified address.</Text>
               {!isHomeDelivery && <Text style={styles.fulfillmentSelected}>Selected</Text>}
             </TouchableOpacity>
           </View>
         </View>
 
-        {isHomeDelivery ? (
         <View style={styles.section}>
           <View style={styles.row}>
             <Text style={styles.sectionTitle}>Shipping Address</Text>
             {addresses.length > 0 && (
-              <TouchableOpacity onPress={() => navigation.navigate('AddressBook')}>
+              <TouchableOpacity onPress={() => navigation.navigate('AddressBook', { deliveryByRapido: isRapidoDelivery })}>
                 <Text style={styles.link}>Change</Text>
               </TouchableOpacity>
             )}
           </View>
 
           {addresses.length === 0 ? (
-            <TouchableOpacity style={styles.addAddrPlaceHolder} onPress={() => navigation.navigate('AddressBook')}>
+            <TouchableOpacity style={styles.addAddrPlaceHolder} onPress={() => navigation.navigate('AddressBook', { deliveryByRapido: isRapidoDelivery })}>
               <Text style={styles.addAddrTitle}>Add shipping address</Text>
               <Text style={styles.addAddrSub}>Required to place your order</Text>
             </TouchableOpacity>
@@ -401,12 +421,12 @@ const CheckoutScreen = ({ navigation }) => {
                     style={[styles.savedAddr, shippingAddress.address === a.address && styles.savedAddrActive]}
                     onPress={() => setShippingAddress({
                       address: a.address,
-                      city: a.city,
-                      state: a.state || '',
+                      city: isRapidoDelivery ? getRapidoCity(a.city) : a.city,
+                      state: isRapidoDelivery ? 'Telangana' : a.state || '',
                       postalCode: a.postalCode,
                       country: a.country || 'India',
                       phone: a.phone || '',
-                      addressType: 'Home',
+                      addressType: a.addressType || 'Home',
                     })}
                   >
                     <Text style={styles.savedAddrText} numberOfLines={2}>{a.address}, {a.city}</Text>
@@ -414,43 +434,50 @@ const CheckoutScreen = ({ navigation }) => {
                   </TouchableOpacity>
                 ))}
               </ScrollView>
-
-              {/* 
-              <TextInput style={styles.input} placeholder="Full Address *" value={shippingAddress.address} onChangeText={(v) => updateAddr('address', v)} />
-              <View style={{ flexDirection: 'row', gap: 10 }}>
-                <TextInput style={[styles.input, { flex: 1 }]} placeholder="City *" value={shippingAddress.city} onChangeText={(v) => updateAddr('city', v)} />
-                <TextInput style={[styles.input, { flex: 1 }]} placeholder="Postal Code *" keyboardType="number-pad" value={shippingAddress.postalCode} onChangeText={(v) => updateAddr('postalCode', v)} />
-              </View>
-              <TextInput style={styles.input} placeholder="Phone Number *" keyboardType="phone-pad" maxLength={10} value={shippingAddress.phone} onChangeText={(v) => updateAddr('phone', v)} />
-              */}
             </>
           )}
-        </View>
-        ) : (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Store Pickup Details</Text>
-          <View style={styles.pickupBox}>
-            <Text style={styles.pickupTitle}>No shipping address is required.</Text>
-            <Text style={styles.pickupText}>
-              Your order will be kept ready at Sri Vinayaka Collections. Please wait for the order confirmation before visiting the store, and carry your order ID when you come for pickup.
-            </Text>
-            <View style={styles.pickupHighlightBox}>
-              <Text style={styles.pickupHighlightText}>You save delivery charges</Text>
-            </View>
-            <View style={styles.whatsappNoticeBox}>
-              <Text style={styles.whatsappNoticeText}>
-                Please Contact Through WhatsApp Before Visiting the Store: {STORE_PICKUP_DETAILS.phone}
+
+          {isRapidoDelivery && (
+            <View style={styles.rapidoNoticeBox}>
+              <Text style={styles.rapidoNoticeTitle}>Rapido service area</Text>
+              <Text style={styles.rapidoNoticeText}>
+                We are serving through Rapido only in Hyderabad and Secunderabad.
               </Text>
+              <View style={styles.cityToggleRow}>
+                {RAPIDO_SERVICE_CITIES.map((city) => {
+                  const selected = shippingAddress.city.trim().toLowerCase() === city.toLowerCase();
+                  return (
+                    <TouchableOpacity
+                      key={city}
+                      style={[styles.cityToggle, selected && styles.cityToggleActive]}
+                      onPress={() => setShippingAddress((prev) => ({ ...prev, city, state: prev.state || 'Telangana' }))}
+                    >
+                      <Text style={[styles.cityToggleText, selected && styles.cityToggleTextActive]}>{city}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </View>
+          )}
+        </View>
+
+        {!isHomeDelivery && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Shop Address (Pickup Origin)</Text>
+          <View style={styles.pickupBox}>
+            <Text style={styles.pickupTitle}>Sri Vinayaka Collections</Text>
+            <Text style={styles.pickupText}>
+              Once your order is ready, Rapido will collect your order from our store and deliver it to your specified address.
+            </Text>
             <View style={styles.storeCard}>
-              <Text style={styles.storeLabel}>Pickup Store</Text>
+              <Text style={styles.storeLabel}>Store Details</Text>
               <Text style={styles.storeName}>{STORE_PICKUP_DETAILS.name}</Text>
               <Text style={styles.storeText}>
                 {STORE_PICKUP_DETAILS.address}, {STORE_PICKUP_DETAILS.city}, {STORE_PICKUP_DETAILS.state} - {STORE_PICKUP_DETAILS.postalCode}
               </Text>
               <Text style={styles.storePhone}>Phone: {STORE_PICKUP_DETAILS.phone}</Text>
             </View>
-            <Text style={styles.pickupFreeText}>Delivery fee will not be charged for store pickup.</Text>
+            <Text style={styles.pickupFreeText}>Rapido delivery is available only in Hyderabad and Secunderabad.</Text>
           </View>
         </View>
         )}
@@ -551,18 +578,18 @@ const CheckoutScreen = ({ navigation }) => {
           {taxAmount > 0 && <View style={styles.summaryRow}><Text style={styles.muted}>{taxConfig.label} ({taxConfig.rate}%)</Text><Text style={styles.val}>Rs.{taxAmount.toLocaleString('en-IN')}</Text></View>}
           <View style={styles.summaryRow}>
             <Text style={styles.successText}>
-              {isHomeDelivery ? `Delivery Fee ${selectedShippingMethod && totalQuantity > 1 ? `(${totalQuantity} x Rs.${selectedShippingMethod.price})` : ''}` : 'Store Pickup'}
+              {isHomeDelivery ? `Delivery Fee ${selectedShippingMethod && totalQuantity > 1 ? `(${totalQuantity} x Rs.${selectedShippingMethod.price})` : ''}` : 'Delivery By Rapido'}
             </Text>
-            <Text style={styles.successText}>{isHomeDelivery ? (deliveryCharge === 0 ? 'Free' : `Rs.${deliveryCharge.toLocaleString('en-IN')}`) : 'No delivery fee'}</Text>
+            <Text style={styles.successText}>{isHomeDelivery ? (deliveryCharge === 0 ? 'Free' : `Rs.${deliveryCharge.toLocaleString('en-IN')}`) : 'Pay driver'}</Text>
           </View>
           {!isHomeDelivery && (
             <View style={styles.shippingDetailCard}>
               <View style={styles.detailCardHeader}>
-                <View style={styles.detailIconWrap}><Text style={styles.detailIcon}>S</Text></View>
-                <Text style={styles.detailLabel}>PICKUP SELECTED</Text>
+                <View style={styles.detailIconWrap}><Text style={styles.detailIcon}>R</Text></View>
+                <Text style={styles.detailLabel}>RAPIDO SELECTED</Text>
               </View>
               <Text style={styles.pickupSummaryText}>
-                No shipping address or delivery method is needed. We will confirm when the order is ready for collection.
+                Rapido delivery is available only in Hyderabad and Secunderabad. Delivery charges are settled with the Rapido driver.
               </Text>
             </View>
           )}
@@ -648,7 +675,7 @@ const CheckoutScreen = ({ navigation }) => {
               },
             ]}
           >
-            <Text style={styles.celebrationKicker}>Store Pickup Selected</Text>
+            <Text style={styles.celebrationKicker}>Shop Address</Text>
             <Text style={styles.celebrationTitle}>WOW!</Text>
             <Text style={styles.celebrationMessage}>You Saved Delivery Charges</Text>
             <Text style={styles.celebrationSubText}>
@@ -823,6 +850,29 @@ const styles = StyleSheet.create({
   savedAddrActive: { borderColor: colors.primary, backgroundColor: '#fdf8f1' },
   savedAddrText: { fontSize: 12, color: colors.text },
   defaultLabel: { fontSize: 9, color: colors.primary, fontWeight: '800', marginTop: 4, textTransform: 'uppercase' },
+  rapidoNoticeBox: {
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: '#f2e8d5',
+    borderRadius: radius.md,
+    backgroundColor: '#fffaf4',
+    padding: 12,
+  },
+  rapidoNoticeTitle: { fontSize: 11, color: colors.primary, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 0.8 },
+  rapidoNoticeText: { fontSize: 11, color: colors.text, fontWeight: '700', lineHeight: 16, marginTop: 4 },
+  cityToggleRow: { flexDirection: 'row', gap: 8, marginTop: 10 },
+  cityToggle: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    backgroundColor: '#fff',
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  cityToggleActive: { borderColor: colors.primary, backgroundColor: '#fdf8f1' },
+  cityToggleText: { fontSize: 11, color: colors.text, fontWeight: '800' },
+  cityToggleTextActive: { color: colors.primary },
   couponRow: { flexDirection: 'row', gap: 8 },
   couponHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 10 },
   couponHint: { flex: 1, fontSize: 10, color: colors.muted, fontWeight: '700' },

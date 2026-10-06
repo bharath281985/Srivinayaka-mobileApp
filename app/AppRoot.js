@@ -6,12 +6,15 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
 import AppNavigator from '../navigation/AppNavigator';
 import { useAppStore } from '../store/useAppStore';
+import { useAppUpdate } from '../utils/useAppUpdate';
+import AppUpdateModal from '../components/AppUpdateModal';
 
 // Prevent splash from auto-hiding
 SplashScreen.preventAutoHideAsync().catch(() => { /* nothing */ });
 
 const AppRoot = () => {
   const hydrateApp = useAppStore((s) => s.hydrateApp);
+  const { updateAvailable, forceUpdate, updateMessage, openStore, dismiss } = useAppUpdate();
 
   useEffect(() => {
     (async () => {
@@ -24,7 +27,7 @@ const AppRoot = () => {
         await SplashScreen.hideAsync();
       }
     })();
-    
+
     // Check for OTA updates silently in the background
     async function updateApp() {
       try {
@@ -65,6 +68,15 @@ const AppRoot = () => {
           <StatusBar style="dark" />
           <AppNavigator />
         </NavigationContainer>
+
+        {/* App update modal — rendered above everything */}
+        <AppUpdateModal
+          visible={updateAvailable}
+          forceUpdate={forceUpdate}
+          updateMessage={updateMessage}
+          onUpdate={openStore}
+          onDismiss={dismiss}
+        />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

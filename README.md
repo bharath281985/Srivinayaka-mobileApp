@@ -1,4 +1,4 @@
-# Saree Mobile App (Expo)
+# Srivinayaka-mobileApp
 
 ## Setup
 

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Sri Vinayaka",
     "slug": "sri-vinayaka-mobile",
-    "version": "1.0.8",
+    "version": "1.0.16",
     "icon": "./assets/logo.png",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -17,7 +17,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.srivinayakacollections.ios",
-      "buildNumber": "8",
+      "buildNumber": "16",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
@@ -37,7 +37,7 @@
     "scheme": "saree-studio",
     "android": {
       "package": "com.srivinayakacollections.android",
-      "versionCode": 11011,
+      "versionCode": 11016,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo.png",
@@ -60,6 +60,7 @@
     },
     "owner": "goexperts",
     "plugins": [
+      "./plugins/withUpiQueries",
       "expo-image",
       "expo-splash-screen",
       "expo-status-bar",
@@ -73,8 +74,8 @@
         "expo-build-properties",
         {
           "android": {
-            "enableMinifyInReleaseBuilds": false,
-            "enableShrinkResourcesInReleaseBuilds": false
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
           }
         }
       ],

@@ -6,7 +6,7 @@ import { colors, spacing, radius, typography } from '../app/theme';
 import { ErrorState } from '../components/States';
 import { SkeletonBox } from '../components/SkeletonCard';
 import { inr } from '../utils/currency';
-import { CANCELLED_STATUSES, ORDER_STATUSES, normalizeOrderStatus } from '../utils/constants';
+import { CANCELLED_STATUSES, ORDER_STATUSES, PICKUP_ORDER_STATUSES, normalizeOrderStatus } from '../utils/constants';
 
 const OrderTrackingScreen = ({ route, navigation }) => {
   const { orderId } = route.params || {};
@@ -42,16 +42,24 @@ const OrderTrackingScreen = ({ route, navigation }) => {
   if (error) return <ErrorState message={error} onRetry={load} />;
 
   const displayStatus = normalizeOrderStatus(track?.orderStatus);
-  const currentIdx = ORDER_STATUSES.indexOf(displayStatus);
+  const isPickup = track?.shippingMethod === 'Store Pickup' || track?.shippingMethod === 'Delivery By Rapido' || /rapido/i.test(track?.shippingMethod || '');
+  const statusSteps = isPickup ? PICKUP_ORDER_STATUSES : ORDER_STATUSES;
+  const currentIdx = statusSteps.indexOf(displayStatus);
   const isCancelled = CANCELLED_STATUSES.includes(track?.orderStatus);
-  const stepIcons = ['1', '2', '3', '4', '5'];
-  const stepDescriptions = [
-    'Your order has been placed.',
-    'Your order has been packed.',
-    'Your order has been shipped.',
-    `Your order is out for delivery to ${track?.shippingAddress?.city || 'your address'}.`,
-    'Your order has been delivered.',
-  ];
+  const stepDescriptions = isPickup
+    ? [
+        'Your order has been placed.',
+        'Your order has been packed.',
+        'Your order is ready for pickup / Rapido dispatch.',
+        'Your order has been collected / delivered.',
+      ]
+    : [
+        'Your order has been placed.',
+        'Your order has been packed.',
+        'Your order has been shipped.',
+        `Your order is out for delivery to ${track?.shippingAddress?.city || 'your address'}.`,
+        'Your order has been delivered.',
+      ];
 
   return (
     <SafeAreaView style={styles.wrap} edges={['bottom']}>
@@ -94,16 +102,16 @@ const OrderTrackingScreen = ({ route, navigation }) => {
         ) : (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Tracking Progress</Text>
-            {ORDER_STATUSES.map((step, i) => {
+            {statusSteps.map((step, i) => {
               const done = i <= currentIdx;
               const active = i === currentIdx;
               return (
                 <View key={step} style={styles.stepRow}>
                   <View style={styles.stepLeft}>
                     <View style={[styles.stepCircle, done && styles.stepCircleDone, active && styles.stepCircleActive]}>
-                      <Text style={styles.stepIcon}>{done ? 'OK' : stepIcons[i]}</Text>
+                      <Text style={styles.stepIcon}>{done ? 'OK' : i + 1}</Text>
                     </View>
-                    {i < ORDER_STATUSES.length - 1 && (
+                    {i < statusSteps.length - 1 && (
                       <View style={[styles.stepConnector, done && i < currentIdx && styles.stepConnectorDone]} />
                     )}
                   </View>

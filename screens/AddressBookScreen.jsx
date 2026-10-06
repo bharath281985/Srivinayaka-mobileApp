@@ -5,7 +5,7 @@ import { useAppStore } from '../store/useAppStore';
 import { EmptyState } from '../components/States';
 import { colors, spacing, radius, typography } from '../app/theme';
 
-const AddressItem = ({ item, index, navigation, setDefault, confirmDelete }) => {
+const AddressItem = ({ item, index, navigation, setDefault, confirmDelete, deliveryByRapido }) => {
     const fade = React.useRef(new Animated.Value(0)).current;
     const slide = React.useRef(new Animated.Value(20)).current;
 
@@ -51,7 +51,7 @@ const AddressItem = ({ item, index, navigation, setDefault, confirmDelete }) => 
                             <Text style={styles.altBtnText}>Set Default</Text>
                         </TouchableOpacity>
                     )}
-                    <TouchableOpacity style={styles.editBtn} onPress={() => navigation.navigate('AddAddress', { addressToEdit: item })}>
+                    <TouchableOpacity style={styles.editBtn} onPress={() => navigation.navigate('AddAddress', { addressToEdit: item, deliveryByRapido })}>
                         <Text style={styles.editBtnText}>Edit Details</Text>
                     </TouchableOpacity>
                 </View>
@@ -63,7 +63,8 @@ const AddressItem = ({ item, index, navigation, setDefault, confirmDelete }) => 
     );
 };
 
-const AddressBookScreen = ({ navigation }) => {
+const AddressBookScreen = ({ route, navigation }) => {
+    const { deliveryByRapido = false } = route.params || {};
     const addresses = useAppStore((s) => s.addresses);
     const removeAddress = useAppStore((s) => s.removeAddress);
     const setDefault = useAppStore((s) => s.setDefaultAddress);
@@ -82,7 +83,7 @@ const AddressBookScreen = ({ navigation }) => {
                 title="Your address book is empty"
                 subtitle="Add your home or office address for faster checkout."
                 actionText="+ Add New Address"
-                onAction={() => navigation.navigate('AddAddress')}
+                onAction={() => navigation.navigate('AddAddress', { deliveryByRapido })}
             />
         );
     }
@@ -96,7 +97,7 @@ const AddressBookScreen = ({ navigation }) => {
                 ListHeaderComponent={
                     <View style={styles.header}>
                         <Text style={typography.h2}>My Addresses</Text>
-                        <TouchableOpacity onPress={() => navigation.navigate('AddAddress')}>
+                        <TouchableOpacity onPress={() => navigation.navigate('AddAddress', { deliveryByRapido })}>
                             <Text style={styles.addText}>+ Add New</Text>
                         </TouchableOpacity>
                     </View>
@@ -108,6 +109,7 @@ const AddressBookScreen = ({ navigation }) => {
                         navigation={navigation} 
                         setDefault={setDefault} 
                         confirmDelete={confirmDelete} 
+                        deliveryByRapido={deliveryByRapido}
                     />
                 )}
             />

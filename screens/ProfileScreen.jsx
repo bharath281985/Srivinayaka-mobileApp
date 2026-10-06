@@ -236,7 +236,7 @@ const ProfileScreen = () => {
           <View style={styles.footerInfo}>
             <Image source={{ uri: getImageUrl('/uploads/logo_luxe.png') }} style={{ width: 40, height: 40, marginBottom: 10 }} contentFit="contain" />
             <Text style={styles.footerLogo}>SRI VINAYAKA COLLECTIONS</Text>
-            <Text style={styles.versionTxt}>Version 1.0.8</Text>
+            <Text style={styles.versionTxt}>Version 1.0.12</Text>
           </View>
         </View>
       </ScrollView>

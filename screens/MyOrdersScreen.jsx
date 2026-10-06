@@ -21,6 +21,7 @@ const STATUS_COLOR = {
   'Order Packed': '#3b82f6',
   Shipped: '#06b6d4',
   'Out for Delivery': '#6366f1',
+  'Ready to Pickup': '#6366f1',
   Delivered: '#15803d',
   Canceled: '#b91c1c',
   Returned: '#6b7280',

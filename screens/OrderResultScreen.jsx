@@ -17,6 +17,7 @@ const CONFETTI_PIECES = Array.from({ length: 42 }, (_, index) => ({
 const OrderResultScreen = ({ route, navigation }) => {
   const { orderId, status = 'success' } = route.params || {};
   const isSuccess = status === 'success';
+  const isTimeout = status === 'timeout';
   const flip = React.useRef(new Animated.Value(0)).current;
   const blast = React.useRef(new Animated.Value(0)).current;
   const confettiAnimations = React.useRef(CONFETTI_PIECES.map(() => new Animated.Value(0))).current;
@@ -108,8 +109,12 @@ const OrderResultScreen = ({ route, navigation }) => {
           >
             <Text style={styles.icon}>{isSuccess ? '✓' : 'x'}</Text>
           </Animated.View>
-          <Text style={styles.title}>{isSuccess ? 'Payment Successful!' : 'Payment Failed'}</Text>
-          <Text style={styles.subtitle}>{isSuccess ? 'Celebration unlocked' : 'Transaction incomplete'}</Text>
+          <Text style={styles.title}>
+            {isSuccess ? 'Payment Successful!' : isTimeout ? 'Payment Timed Out' : 'Payment Failed'}
+          </Text>
+          <Text style={styles.subtitle}>
+            {isSuccess ? 'Celebration unlocked' : isTimeout ? 'Session expired' : 'Transaction incomplete'}
+          </Text>
         </View>
 
         <View style={styles.card}>
@@ -144,6 +149,11 @@ const OrderResultScreen = ({ route, navigation }) => {
             <View style={styles.successBlastNote}>
               <Text style={styles.successBlastTitle}>WOW! Payment successful</Text>
               <Text style={styles.successBlastText}>Your order is confirmed. A confirmation email has been sent with your order details.</Text>
+            </View>
+          ) : isTimeout ? (
+            <View style={styles.timeoutNote}>
+              <Text style={styles.timeoutTitle}>⏰ Session Expired</Text>
+              <Text style={styles.timeoutText}>Your cart is still saved. You can go back to checkout and retry the payment anytime.</Text>
             </View>
           ) : (
             <Text style={styles.footerNote}>No funds were deducted. If they were, they will be refunded shortly.</Text>
@@ -218,6 +228,17 @@ const styles = StyleSheet.create({
   successBlastTitle: { color: '#15803d', fontSize: 15, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 0.8 },
   successBlastText: { color: '#166534', fontSize: 11, fontWeight: '700', lineHeight: 17, marginTop: 8, textAlign: 'center' },
   footerNote: { fontSize: 10, color: '#999', textAlign: 'center', fontStyle: 'italic', lineHeight: 16 },
+  timeoutNote: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#fed7aa',
+    borderRadius: 22,
+    backgroundColor: '#fff7ed',
+    padding: 16,
+    alignItems: 'center',
+  },
+  timeoutTitle: { color: '#c2410c', fontSize: 15, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 0.8 },
+  timeoutText: { color: '#9a3412', fontSize: 11, fontWeight: '700', lineHeight: 17, marginTop: 8, textAlign: 'center' },
 });
 
 export default OrderResultScreen;
