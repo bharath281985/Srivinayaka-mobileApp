@@ -303,12 +303,8 @@ const CheckoutScreen = ({ navigation }) => {
   };
 
   const placeOrder = async () => {
-    if (!token) {
-      setPostLoginRedirect('Checkout');
-      navigation.navigate('Auth', { screen: 'Login' });
-      return;
-    }
-    if (!validate()) return;
+    showToast('We are currently not proceeding with orders and deliveries at this time.', 'warning');
+    return;
 
     setPlacing(true);
     try {
@@ -374,6 +370,29 @@ const CheckoutScreen = ({ navigation }) => {
     <SafeAreaView style={styles.wrap} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={[typography.h2, { marginBottom: spacing.md }]}>Checkout</Text>
+
+        {/* Delivery Notice Card */}
+        <View style={styles.deliveryNoticeCard}>
+          <View style={styles.deliveryNoticeHeader}>
+            <View style={styles.deliveryNoticeIconWrap}>
+              <Text style={styles.deliveryNoticeIcon}>⚠️</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={styles.noticeBadge}>
+                <Text style={styles.noticeBadgeText}>DELIVERY NOTICE</Text>
+              </View>
+              <Text style={styles.deliveryNoticeTitle}>Currently Not Delivering Orders</Text>
+            </View>
+          </View>
+          <Text style={styles.deliveryNoticeDesc}>
+            We are currently not proceeding with deliveries and new orders at this time. We apologize for the inconvenience caused.
+          </Text>
+          <View style={styles.deliveryNoticeContact}>
+            <Text style={styles.deliveryNoticeContactText}>
+              Store queries & support: +91 9392239145
+            </Text>
+          </View>
+        </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Delivery Option</Text>
@@ -693,8 +712,12 @@ const CheckoutScreen = ({ navigation }) => {
           <Text style={styles.muted}>Total Amount</Text>
           <Text style={styles.footerTotal}>{inr(totalPrice)}</Text>
         </View>
-        <TouchableOpacity style={styles.placeBtn} onPress={placeOrder} disabled={placing}>
-          <Text style={styles.placeBtnText}>{placing ? 'Processing...' : 'Pay Now'}</Text>
+        <TouchableOpacity
+          style={[styles.placeBtn, styles.placeBtnDisabled]}
+          onPress={() => showToast('We are currently not proceeding with orders and deliveries at this time.', 'warning')}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.placeBtnTextDisabled}>Orders Paused</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -934,7 +957,72 @@ const styles = StyleSheet.create({
   footer: { flexDirection: 'row', padding: spacing.md, borderTopWidth: 1, borderColor: colors.border, backgroundColor: colors.card, alignItems: 'center' },
   footerTotal: { fontSize: 20, fontWeight: '900', color: colors.primary },
   placeBtn: { flex: 1.5, backgroundColor: colors.primary, borderRadius: radius.md, padding: 14, alignItems: 'center', marginLeft: 16 },
+  placeBtnDisabled: { backgroundColor: '#d1d5db', opacity: 0.95 },
   placeBtnText: { color: colors.accent, fontWeight: '800', fontSize: 16 },
+  placeBtnTextDisabled: { color: '#4b5563', fontWeight: '800', fontSize: 13, textTransform: 'uppercase', letterSpacing: 0.6 },
+  deliveryNoticeCard: {
+    backgroundColor: '#fffbeb',
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    borderWidth: 1.5,
+    borderColor: '#fde68a',
+    marginBottom: spacing.xs,
+  },
+  deliveryNoticeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 8,
+  },
+  deliveryNoticeIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#fef3c7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#fcd34d',
+  },
+  deliveryNoticeIcon: {
+    fontSize: 18,
+  },
+  noticeBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#fef3c7',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    marginBottom: 3,
+  },
+  noticeBadgeText: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#92400e',
+    letterSpacing: 0.8,
+  },
+  deliveryNoticeTitle: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#78350f',
+  },
+  deliveryNoticeDesc: {
+    fontSize: 12,
+    color: '#92400e',
+    lineHeight: 18,
+    fontWeight: '600',
+  },
+  deliveryNoticeContact: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#fde68a',
+  },
+  deliveryNoticeContactText: {
+    fontSize: 11,
+    color: '#78350f',
+    fontWeight: '800',
+  },
   shippingCard: {
     borderWidth: 1.5,
     borderColor: colors.border,

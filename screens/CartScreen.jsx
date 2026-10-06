@@ -182,6 +182,9 @@ const CartScreen = ({ navigation }) => {
             <Text style={styles.totalLabel}>TOTAL</Text>
             <Text style={styles.totalValue}>{inr(itemsPrice)}</Text>
           </View>
+          <View style={styles.cartNoticeBox}>
+            <Text style={styles.cartNoticeText}>⚠️ Notice: Deliveries & orders currently paused</Text>
+          </View>
           <TouchableOpacity style={styles.checkoutBtn} onPress={handleCheckout}>
             <Text style={styles.checkoutBtnText}>Checkout</Text>
           </TouchableOpacity>
@@ -266,6 +269,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   checkoutBtnText: { color: colors.accent, fontWeight: '800', fontSize: 15 },
+  cartNoticeBox: {
+    backgroundColor: '#fffbeb',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+  cartNoticeText: {
+    fontSize: 11,
+    color: '#92400e',
+    fontWeight: '700',
+  },
 });
 
 export default CartScreen;
